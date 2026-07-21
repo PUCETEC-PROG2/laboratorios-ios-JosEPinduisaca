@@ -8,23 +8,28 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var selectedTab: Int = 0;// segun lo que tenga aqui cambiara de valor
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             RepoList()
                 .tabItem{
                     Label("Repositorios",
                           systemImage:
                             "arrow.trianglehead.branch")
                 }
-            RepoForm()
+                .tag(0)
+            RepoForm(selectTab: $selectedTab)
                 .tabItem{ Label("Crear repositorio",
                                 systemImage: "plus")
                 }
+                .tag(1)
+            
             Profile()
                 .tabItem{
                     Label("Perfil de usuario",
-                    systemImage: "person.crop.circle")
+                          systemImage: "person.crop.circle")
                 }
+                .tag(2)
         }
     }
 }
