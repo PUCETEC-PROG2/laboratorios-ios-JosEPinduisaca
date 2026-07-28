@@ -6,26 +6,57 @@
 //
 
 import SwiftUI
+
 struct Profile: View {
+    @StateObject private var viewController = ProfileViewController()
+
     var body: some View {
         NavigationStack {
-            VStack{
-                Text("Jose Francisco Pinduisaca")
-                    .font(.title)
-                Image(uiImage:  .githubLogo)
-                    .resizable()
-                    .scaledToFit()
-                Text("josefranciscopinduisaca")
-                    .font(.headline)
-                    .padding(.vertical)
-                Text("GitHub is a cloud-based platform where developers store, share, and track their software code. It uses Git for version control, allowing teams to collaborate on projects safely from anywhere in the world.Key FeaturesCloud Hosting: Stores code repositories safely online.Version Control: Tracks every change made to code.Collaboration: Enables multiple people to work together.Open Source: Hosts millions of free public projects.")
-                    .font(.caption)
+            Group {
+                if viewController.isLoading {
+                    ProgressView("Cargando perfil...")
+                } else if let errorMsg = viewController.errorMsg {
+                    Text(errorMsg)
+                        .foregroundStyle(.red)
+                        .padding()
+                } else if let user = viewController.user {
+                    VStack {
+                        Text(user.name ?? user.login)
+                            .font(.title)
+
+                        AsyncImage(url: URL(string: user.avatarUrl)) { image in
+                            image
+                                .resizable()
+                                .scaledToFit()
+                        } placeholder: {
+                            Image(uiImage: .githubLogo)
+                                .resizable()
+                                .scaledToFit()
+                        }
+                        .frame(width: 150, height: 150)
+
+                        Text(user.login)
+                            .font(.headline)
+                            .padding(.vertical)
+
+                        if let bio = user.bio {
+                            Text(bio)
+                                .font(.caption)
+                        }
+                    }
+                    .padding()
+                }
             }
-            .padding()
             .navigationTitle("Perfil de usuario")
+        }
+        .onAppear {
+            Task {
+                await viewController.loadUser()
+            }
         }
     }
 }
+
 #Preview {
     Profile()
 }

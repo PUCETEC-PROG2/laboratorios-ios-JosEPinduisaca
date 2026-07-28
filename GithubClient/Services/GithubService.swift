@@ -63,6 +63,42 @@ class GithubService {
         }
     }
 
+    func getUser() async throws -> UserInfo {
+        let response = await AF.request(
+            "\(baseUrl)/user",
+            method: .get,
+            headers: headers
+        )
+        .validate(statusCode: 200..<300)
+        .serializingDecodable(UserInfo.self)
+        .response
+
+        // imprimir informacion de depuracion
+        print("Status Code: \(response.response?.statusCode ?? -1)")
+
+        if let data = response.data,
+           let json = String(data: data, encoding: .utf8) {
+            print("Response Body:")
+            print(json)
+        }
+
+        switch response.result {
+        case .success(let user):
+            return user
+
+        case .failure(let error):
+            print("== Alamofire Error ==")
+            print(error)
+
+            if let afError = error.asAFError {
+                print("AFError: \(afError)")
+                print("Response Code: \(afError.responseCode ?? -1)")
+                print("Underlying Error: \(String(describing: afError.underlyingError))")
+            }
+            throw error
+        }
+    }
+
     func createRepository(name: String, desc: String) async throws -> Repository {
         let response = await AF.request(
             "\(baseUrl)/user/repos",
